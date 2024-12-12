@@ -1,0 +1,10 @@
+# WSL, conda, python 3.9
+numpy 
+scipy
+pylsl # conda install -c conda-forge liblsl
+PyQt6
+onnxruntime
+websocket-client
+python-dispatch
+python-dotenv
+wrapt-timeout-decorator

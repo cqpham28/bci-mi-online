@@ -1,0 +1,4 @@
+*__pycache__
+.env
+file.tmp
+*.onnx

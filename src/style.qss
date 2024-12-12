@@ -1,0 +1,122 @@
+.screen-background {
+    background-color: white;
+}
+
+.left-button {
+    background-color: white; 
+    border: 3px solid #2acc97; 
+    border-radius: 8px
+}
+
+.right-button {
+    background-color: white; 
+    border: 3px solid #2acc97; 
+    border-radius: 8px
+}
+
+.top-button {
+    background-color: white; 
+    border: 3px solid #2acc97; 
+    border-radius: 8px
+}
+
+.bottom-button {
+    background-color: white; 
+    border: 3px solid #2acc97;
+    border-radius: 8px
+}
+
+.menu-button {
+    background-color: #2acc97;
+    border-radius: 8px;
+    color: white;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.menu-button:hover {
+    background-color: #17b37f;
+}
+
+.menu-button-quit {
+    background-color: #cc422a;
+    border-radius: 8px;
+    color: white;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.menu-button-quit:hover {
+    background-color: #be3017;
+}
+
+.menu-title {
+    font-size: 96px;
+    color: #2acc97;
+    font-weight: 700
+}
+
+.menu-footer {
+    font-size: 20px;
+    color: #2acc97;
+    font-weight: 200
+}
+
+.start-ex-button {
+    background-color: #2acc97;
+    border-radius: 8px;
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.start-ex-button:hover {
+    background-color: #17b37f;
+}
+
+.pause-button {
+    background-color: #cc422a;
+    border-radius: 8px;
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.pause-button:hover {
+    background-color: #be3017;
+}
+
+.trial-option {
+    background-color: #2acc97;
+    border-radius: 8px;
+    color: white;
+    font-size: 50px;
+    font-weight: bold;
+}
+
+.trial-option:hover {
+    background-color: #17b37f;
+}
+
+.experiment-timer {
+    font-size: 24px;
+    color: #1d1d1d;
+    font-weight: 700;
+    text-align: center;
+}
+
+.end-of-experiment-title {
+    font-size: 72px;
+    color: #2acc97;
+    font-weight: 700
+}
+
+.trial-number-display {
+    font-size: 30px;
+    color: #17b37f;
+}
+
+.skipped-trial-number-display {
+    font-size: 30px;
+    color: #be3017;
+}
