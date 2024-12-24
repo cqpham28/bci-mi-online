@@ -52,28 +52,6 @@ class Module_Prediction:
         return inp
 
 
-    # def predict(self, eeg_trial: np.array):
-    #     """ Run prediction on the trial """
-
-    #     # Chunk window segments
-    #     list_arr = chunk(eeg_trial, self.win_sample, self.overlap_sample)
-        
-    #     # Pipeline predict
-    #     y_preds = []
-    #     for arr in list_arr:
-    #         arr = self._preprocess(arr)
-    #         out = self._onnx(arr)
-    #         prob = func_softmax(out[0].reshape(-1,))
-    #         y_preds.append(np.argmax(prob))
-        
-    #     # Vote
-    #     y_preds = np.array(y_preds)
-    #     y_vote = stats.mode(y_preds, keepdims=True)[0]
-
-    #     return y_vote+1
-
-
-
     def predict(self, eeg_trial: np.array):
         """ Run prediction on the trial """
 

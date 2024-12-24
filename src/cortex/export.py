@@ -30,11 +30,9 @@ r.record_description = '' # optional param
 
 r.record_export_folder = record_export_folder
 r.record_export_data_types = ['EEG']
-r.record_export_format = 'EDF'
+r.record_export_format = 'CSV'
+# r.record_export_format = 'EDF'
 r.record_export_version = 'V2'
-
-# duration_of_trial = 10.5
-# delay_between_trials = 0
 
 
 def start_recording_experiment(**kwargs):

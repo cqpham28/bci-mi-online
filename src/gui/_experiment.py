@@ -12,12 +12,6 @@ import utils
 arrow_random = None
 
 
-# get x and y center in an area
-def center_in_area(start_x, end_x, start_y, end_y, widget):
-    x_position = start_x + int((end_x - start_x) / 2) - int(widget.width() / 2)
-    y_position = start_y + int((end_y - start_y) / 2) - int(widget.height() / 2)
-    return {'x': x_position, 'y': y_position}
-
 
 ######################################
 class experiment(QMainWindow):
@@ -28,7 +22,6 @@ class experiment(QMainWindow):
         utils.func_set_geometry(self)
         self.center()
         self.setProperty("class", "screen-background")
-        # self.centralwidget = QtWidgets.QWidget(self) # move here
 
         ##
         self.protocol = self.kwargs["protocol"]
@@ -42,28 +35,37 @@ class experiment(QMainWindow):
         self.create_start_button()
         self.create_corner_buttons()
 
-        #CUONG
+        # NEWLY ADDED
         self.show_info_kwarg()
         self.show_deploy_cursor()
 
 
+
     #------------------------------#
-    def show_deploy_cursor(self): #CUONG
+    def get_currentDateTime(self): #newly added
+        # return QDateTime.currentDateTime().toSecsSinceEpoch()
+        return QDateTime.currentDateTime().toMSecsSinceEpoch() / 10**3
+
+
+    #------------------------------#
+    def show_deploy_cursor(self): #newly added
         self.window = Cursor_Window()
         self.window.show()
 
     #------------------------------#
-    def move_cursor(self): #CUONG
+    def move_cursor(self): #newly added
         label = utils.SharedDataLabel.getCurrentResult()
         print(f"MOVE CURSOR (LABEL: {label})")
 
         # index = self.recent_trial[""]
-        x, y = self.window.update_coordinate(label)
-        self.window.object.setPos(x, y)
+        if label is not None:
+            x, y = self.window.update_coordinate(label)
+            self.window.object.setPos(x, y)
+
         self.display_cursor_timer.stop()
 
     #------------------------------#
-    def show_info_kwarg(self): #CUONG
+    def show_info_kwarg(self): #newly added
         self.label_info = {}
         for i, key in enumerate(self.kwargs.keys()):
             self.label_info[key] = QtWidgets.QLabel(self.centralwidget)
@@ -79,7 +81,6 @@ class experiment(QMainWindow):
             )
 
     #------------------------------#
-    # khoi tao cac bien
     def init_variables(self):
 
         # count number of trials/skipped trials
@@ -142,24 +143,33 @@ class experiment(QMainWindow):
         self.loading_spin_label.setGeometry(
             self.horizontal_center_position(197), 
             self.vertical_center_positions(197),
-            197, 197)
+            197, 
+            197,
+        )
         self.spinner = QtGui.QMovie('./asset/loading.gif')
         self.spinner.start()
 
         # show instruction timer
         self.timer_blur_instruction = QtCore.QTimer(self)
-        self.timer_blur_instruction.timeout.connect(self.blur_instruction)
+        self.timer_blur_instruction.timeout.connect(
+            self.blur_instruction
+        )
 
         # set timer to^ mau`
         self.button_bg_timer = QtCore.QTimer(self)
         # set mau` cho tat ca cac nut và tăng bộ đếm số lần thử
-        self.button_bg_timer.timeout.connect(self.set_all_button_white)
-        self.button_bg_timer.timeout.connect(self.increase_count_trials)
+        self.button_bg_timer.timeout.connect(
+            self.set_all_button_white
+        )
+        self.button_bg_timer.timeout.connect(
+            self.increase_count_trials
+        )
 
         # wait display instruction
         self.wait_display_instruction_timer = QtCore.QTimer(self)
         self.wait_display_instruction_timer.timeout.connect(
-            self.display_instruction)
+            self.display_instruction
+        )
 
         # instruction
         self.arrow_img = QtGui.QPixmap(NUMBER_ARROW_MAPPING[1] + '.png')
@@ -192,9 +202,11 @@ class experiment(QMainWindow):
 
         self.skipped_trial_num_label = QtWidgets.QLabel(self.centralwidget)
         self.skipped_trial_num_label.setProperty(
-            "class", "skipped-trial-number-display")
+            "class", "skipped-trial-number-display"
+        )
         self.skipped_trial_num_label.setText(
-            'REPORTED: ' + str(self.count_errored_trials))
+            'REPORTED: ' + str(self.count_errored_trials)
+        )
         self.skipped_trial_num_label.hide()
 
         # timer label
@@ -219,7 +231,8 @@ class experiment(QMainWindow):
         # display forecast time ??
         # self.display_forecast_time = QtCore.QTimer(self)
 
-        #CUONG
+
+        # newly added
         self.display_cursor_timer = QtCore.QTimer(self)
         self.display_cursor_timer.timeout.connect(self.move_cursor)
         # create a mapping dict {0: self.btn_right, 1: ...}
@@ -280,8 +293,9 @@ class experiment(QMainWindow):
     
     
     #------------------------------#
-    # hien thi 8 nut 8 goc
     def create_corner_buttons(self):
+        """show 8 corner buttons"""
+
         responsive_width = int(self.width() * 1 / 4)
         responsive_height = int(self.height() * 1 / 4)
         corner_width = int(self.width() * 1 / 8)
@@ -400,8 +414,9 @@ class experiment(QMainWindow):
 
 
     #------------------------------#
-    # hien thi bien con chuot giua man hinh
     def create_mouse_img(self):
+        """ show the mouse in the center """
+
         self.mouse_label.setPixmap(self.mouse_img)
         self.mouse_label.resize(
             self.mouse_img.width(), 
@@ -414,8 +429,8 @@ class experiment(QMainWindow):
 
 
     #------------------------------#
-    # bat event thay doi size cua screen
     def resizeEvent(self, event):
+        """event change screen's size"""
         
         self.create_corner_buttons()
 
@@ -444,7 +459,8 @@ class experiment(QMainWindow):
             )
         self.skipped_trial_num_label.move(
             int(MARGIN * 1.75) + self.skipped_trial_num_label.width(),
-            self.height() - int(MARGIN * 0.75) + int(self.skipped_trial_num_label.height() / 2))
+            self.height() - int(MARGIN * 0.75) + int(self.skipped_trial_num_label.height() / 2)
+        )
 
         if self.is_started == True:
             x_position = int((self.width() - self.mouse_label.width()) / 2)
@@ -468,18 +484,17 @@ class experiment(QMainWindow):
         self.move(frameGm.topLeft())
 
 
-
     #------------------------------#
-    # hien thi cac mui ten
     def display_instruction(self):
+        """display arrow instruction"""
 
-        # print(f"\n===trial: {self.count_trials}=\n")
-
-        self.relax_time_obj["to"] = QDateTime.currentDateTime().toSecsSinceEpoch()
+        # self.relax_time_obj["to"] = QDateTime.currentDateTime().toSecsSinceEpoch()
+        self.relax_time_obj["to"] = self.get_currentDateTime()
         self.set_relax_time_recent_trial()
 
         self.wait_display_instruction_timer.stop()
-        self.instruction_time_obj["from"] = QDateTime.currentDateTime().toSecsSinceEpoch()
+        # self.instruction_time_obj["from"] = QDateTime.currentDateTime().toSecsSinceEpoch()
+        self.instruction_time_obj["from"] = self.get_currentDateTime()
 
         # self.relax_label.hide()
 
@@ -515,16 +530,19 @@ class experiment(QMainWindow):
     def blur_instruction(self):
         """ blur """
 
-        self.instruction_time_obj["to"] = QDateTime.currentDateTime().toSecsSinceEpoch()
+        # self.instruction_time_obj["to"] = QDateTime.currentDateTime().toSecsSinceEpoch()
+        self.instruction_time_obj["to"] = self.get_currentDateTime()
         self.set_instruction_time_recent_trial()
-        self.think_time_obj["from"] = QDateTime.currentDateTime().toSecsSinceEpoch()
+
+        # self.think_time_obj["from"] = QDateTime.currentDateTime().toSecsSinceEpoch()
+        self.think_time_obj["from"] = self.get_currentDateTime()
 
         # beep
         self.mouse_label.clear()
         winsound.Beep(frequency=2000, duration=100)
         print("BEEP")
 
-        # CUONG - ADD BLUR
+        # NEWLY ADDED
         self.generate_arrow(arrow_random, blur=True)
 
 
@@ -533,18 +551,23 @@ class experiment(QMainWindow):
 
         # START TIME TO IMAGERY
         self.loading_spin_label_timer.start(FORECAST_TIME)
-            
         self.current_step = STEP_THINKING
+
         self.timer_blur_instruction.stop()
+        utils.SharedStartAccumulate.setCurrentResult(True) # have ~delay 0.1s
+
+
 
 
     #------------------------------#
     # hien thi du doan (TODO: import du lieu tu model)
     def show_forecast(self):
-        self.think_time_obj["to"] = QDateTime.currentDateTime().toSecsSinceEpoch()
+        # self.think_time_obj["to"] = QDateTime.currentDateTime().toSecsSinceEpoch()
+        self.think_time_obj["to"] = self.get_currentDateTime()
         self.set_think_time_recent_trial()
 
-        self.result_time_obj["from"] = QDateTime.currentDateTime().toSecsSinceEpoch()
+        # self.result_time_obj["from"] = QDateTime.currentDateTime().toSecsSinceEpoch()
+        self.result_time_obj["from"] = self.get_currentDateTime()
         
         # Erase mouse and arrow
         # self.mouse_label.clear()
@@ -558,7 +581,7 @@ class experiment(QMainWindow):
         self.get_predict_result()
         self.button_bg_timer.start(DISPLAY_FORECAST_TIME)
 
-        #CUONG
+        # NEWLY ADDED
         self.display_cursor_timer.start(100)
         # self.break_label.show()
 
@@ -582,11 +605,12 @@ class experiment(QMainWindow):
             button.setStyleSheet("background-color: white;")
 
         # doi mau nut duoc chon
-        predicted_btn.setStyleSheet("background-color: #2acc97;")
+        if predicted_btn is not None:
+            predicted_btn.setStyleSheet("background-color: #2acc97;")
 
 
 
-    # # CUONG add break between trials
+    # # add break between trials
     # def show_break(self):
     #     self.result_time_obj["to"] = QDateTime.currentDateTime().toSecsSinceEpoch()
     #     self.set_result_time_recent_trial()
@@ -603,8 +627,8 @@ class experiment(QMainWindow):
 
 
     #------------------------------#
-    # set x-axis va y-axis cho arrow
     def set_position_arrow(self):
+        """set x-axis and y-axis for arrow"""
 
         global arrow_random
         x_position = 0
@@ -672,27 +696,25 @@ class experiment(QMainWindow):
                 self.height() - MARGIN,
                 self.arrow_label)
             
-            
         x_position = pos['x']
         y_position = pos['y']
         self.arrow_label.move(x_position, y_position)
 
 
     #------------------------------#
-    # set white background cho tat ca cac nut
     def set_all_button_white(self):
+        """set white background for all buttons"""
 
         for i,v in enumerate(self.list_button):
             self.dictButton[v].setStyleSheet("background-color: white;")
 
-
         self.button_bg_timer.stop()
         # self.break_label_timer.stop()
 
-        self.result_time_obj["to"] = QDateTime.currentDateTime().toSecsSinceEpoch()
+        self.result_time_obj["to"] = self.get_currentDateTime()
         # self.break_time_obj["to"] = QDateTime.currentDateTime().toSecsSinceEpoch()
-        self.relax_time_obj["from"] = QDateTime.currentDateTime().toSecsSinceEpoch()
-
+        self.relax_time_obj["from"] = self.get_currentDateTime()
+        
         if self.result_time_obj["from"] != "":
             self.set_result_time_recent_trial()
             self.append_recent_trial()
@@ -700,7 +722,9 @@ class experiment(QMainWindow):
         #     self.set_break_time_recent_trial()
         #     self.append_recent_trial()
 
-        self.wait_display_instruction_timer.start(WAIT_SHOW_INSTRUCTION_TIME)
+        self.wait_display_instruction_timer.start(
+            WAIT_SHOW_INSTRUCTION_TIME
+        )
         self.current_step = STEP_RELAXING
 
         # x_position = int((self.width() - self.relax_img.width()) / 2)
@@ -710,26 +734,26 @@ class experiment(QMainWindow):
         self.btn_report.setEnabled(True)
         self.btn_report.setStyleSheet("background-color: #2acc97")
 
-    # lay y-axis chinh giua theo chieu doc
+
+    #------------------------------#
     def vertical_center_positions(self, height):
+        """get y-axis in the center (vertically)"""
         return int((self.height() - height) / 2)
 
-    # lay x-axis chinh giua theo chieu ngang
+    #------------------------------#
     def horizontal_center_position(self, width):
+        """get y-axis in the center (horizontally)"""
         return int((self.width() - width) / 2)
 
+    #------------------------------#
     def set_conditions_back_to_first_step_after_pause(self):
+        """reset condition"""
         self.pause_remaining_time = 0
         self.last_active_timer = None
         self.spinner.setPaused(False)
         self.is_paused = False
 
-    # def back_to_home(self):
-    #     menu = Menu()
-    #     widget.addWidget(menu)
-    #     widget.setCurrentWidget(menu)
-
-
+    #------------------------------#
     def reset_recent_trial(self):
         self.recent_trial = {
             "index": ((self.recorded_trials[len(self.recorded_trials) - 1])["index"] + 1),
@@ -751,7 +775,7 @@ class experiment(QMainWindow):
         }
 
         self.relax_time_obj = {
-            "from": QDateTime.currentDateTime().toSecsSinceEpoch(),
+            "from": self.get_currentDateTime(),
             "to": ""
         }
         self.instruction_time_obj = {
@@ -779,7 +803,10 @@ class experiment(QMainWindow):
         self.actual_skip_time = ""
 
 
+    #------------------------------#
     def report_trial(self):
+        """add value"""
+
         self.count_errored_trials += 1
         self.btn_report.setEnabled(False)
         self.btn_report.setStyleSheet("background-color: #c7c7c7")
@@ -789,7 +816,7 @@ class experiment(QMainWindow):
         self.set_think_time_recent_trial()
         self.set_result_time_recent_trial()
 
-        # self.set_break_time_recent_trial() # CUONG
+        # self.set_break_time_recent_trial() # ???
 
         if self.count_labels_resized == False and self.count_errored_trials >= 10:
             self.skipped_trial_num_label.resize(
@@ -805,33 +832,42 @@ class experiment(QMainWindow):
         self.skipped_trial_num_label.setText(
             'REPORTED: ' + str(self.count_errored_trials))
 
+
+    #------------------------------#
     def set_relax_time_recent_trial(self):
         self.recent_trial["start_rest"] = self.relax_time_obj["from"]
         self.recent_trial["end_rest"] = self.relax_time_obj["to"]
 
+    #------------------------------#
     def set_instruction_time_recent_trial(self):
         self.recent_trial["start_cue"] = self.instruction_time_obj["from"]
         self.recent_trial["end_cue"] = self.instruction_time_obj["to"]
 
+    #------------------------------#
     def set_think_time_recent_trial(self):
         self.recent_trial["start_MI"] = self.think_time_obj["from"]
         self.recent_trial["end_MI"] = self.think_time_obj["to"]
 
+    #------------------------------#
     def set_result_time_recent_trial(self):
         self.recent_trial["start_result"] = self.result_time_obj["from"]
         self.recent_trial["end_result"] = self.result_time_obj["to"]
 
+    #------------------------------#
     def set_break_time_recent_trial(self):
         self.recent_trial["start_break"] = self.break_time_obj["from"]
         self.recent_trial["end_break"] = self.break_time_obj["to"]
 
+    #------------------------------#
     def set_trial_error(self):
         self.recent_trial["errored"] = "Yes"
 
+    #------------------------------#
     def append_recent_trial(self):
         self.recorded_trials.append(self.recent_trial)
         self.reset_recent_trial()
 
+    #------------------------------#
     def increase_count_trials(self):
         self.count_trials += 1
 
@@ -851,6 +887,8 @@ class experiment(QMainWindow):
         if self.count_trials == self.kwargs["n_trials"]:
             self.end_experiment()
 
+
+    #------------------------------#
     def render_timer(self):
 
         self.experiment_timer_label.show()
@@ -864,19 +902,21 @@ class experiment(QMainWindow):
         self.update_time()  # initial time display
 
 
+    #------------------------------#
     def update_time(self):
         self.current_experiment_time = self.current_experiment_time.addSecs(1)
         utils.SharedDataTimer.setCurrentResult(self.current_experiment_time)
-        self.experiment_timer_label.setText(self.current_experiment_time.toString('mm:ss'))
+
+        self.experiment_timer_label.setText(
+            self.current_experiment_time.toString('mm:ss')
+        )
 
 
 
 
-
-
-##############################33
-# SECTION end of experiment screen
+############################
 class end_of_experiment(QMainWindow):
+    """Section END OF EXPERIMENT SCREEN"""
     def __init__(self):
         super().__init__()
         
@@ -889,6 +929,7 @@ class end_of_experiment(QMainWindow):
         self.create_buttons()
 
 
+    #------------------------------#
     def create_labels(self):
         self.title = QtWidgets.QLabel(self.centralwidget)
         self.title.setText("FINISHED!")
@@ -900,12 +941,20 @@ class end_of_experiment(QMainWindow):
         self.footer.setProperty("class", "menu-footer")
         self.footer.show()
 
+    #------------------------------#
     def create_buttons(self):
         button_x = int((self.width() - BUTTON_WIDTH) / 2)
         button_y = int((self.height() - BUTTON_HEIGHT) / 2) - GAP
 
         self.btn_restart = QtWidgets.QPushButton(self.centralwidget)
-        self.btn_restart.setGeometry(QtCore.QRect(button_x, button_y, BUTTON_WIDTH, BUTTON_HEIGHT))
+        self.btn_restart.setGeometry(
+            QtCore.QRect(
+                button_x, 
+                button_y, 
+                BUTTON_WIDTH, 
+                BUTTON_HEIGHT
+            )
+        )
         self.btn_restart.setProperty("class", "menu-button")
         self.btn_restart.setText('RESTART')
         self.btn_restart.setIcon(QtGui.QIcon('./asset/microscope_white.png'))
@@ -914,7 +963,14 @@ class end_of_experiment(QMainWindow):
         self.btn_restart.clicked.connect(self.navigate_to_config_trial)
 
         self.btn_home = QtWidgets.QPushButton(self.centralwidget)
-        self.btn_home.setGeometry(QtCore.QRect(button_x, button_y + GAP, BUTTON_WIDTH, BUTTON_HEIGHT))
+        self.btn_home.setGeometry(
+            QtCore.QRect(
+                button_x, 
+                button_y + GAP, 
+                BUTTON_WIDTH, 
+                BUTTON_HEIGHT
+            )
+        )
         self.btn_home.setProperty("class", "menu-button")
         self.btn_home.setText('HOME')
         self.btn_home.setIcon(QtGui.QIcon('./asset/home.png'))
@@ -939,6 +995,7 @@ class end_of_experiment(QMainWindow):
         self.btn_quit.clicked.connect(QtCore.QCoreApplication.quit)
 
 
+    #------------------------------#
     def resizeEvent(self, event):
         self.title.move(
             int((self.width() - self.title.width()) / 2), 
@@ -962,9 +1019,20 @@ class end_of_experiment(QMainWindow):
             )
 
 
+    #------------------------------#
     def back_to_home(self):
         pass
 
+
+    #------------------------------#
     def navigate_to_config_trial(self):
         pass
 
+
+
+############
+def center_in_area(start_x, end_x, start_y, end_y, widget):
+    """get x and y center in the area"""
+    x_position = start_x + int((end_x - start_x) / 2) - int(widget.width() / 2)
+    y_position = start_y + int((end_y - start_y) / 2) - int(widget.height() / 2)
+    return {'x': x_position, 'y': y_position}

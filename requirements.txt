@@ -1,8 +1,9 @@
-# WSL, conda, python 3.9
+# WSL, conda, python 3.11.6
+# conda install -c conda-forge liblsl
 numpy 
 scipy
-pylsl # conda install -c conda-forge liblsl
-PyQt6
+pylsl==1.16.2 
+PyQt6==6.7.1
 onnxruntime
 websocket-client
 python-dispatch

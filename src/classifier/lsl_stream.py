@@ -1,25 +1,31 @@
+import utils
 import time
 import threading
 import numpy as np
-from pylsl import StreamInfo, StreamOutlet
-from pylsl import StreamInlet, resolve_stream, resolve_bypred
-import utils
-
+from pylsl import (
+    StreamInfo, 
+    StreamOutlet, 
+    StreamInlet,
+    resolve_stream,
+    resolve_bypred,
+    local_clock,
+)
 
 class LSL_STREAM:
     def __init__(self):
-
+        """
+        
+        """
         self.info = StreamInfo(
             name='BCI_online', 
             type='Markers', 
-            channel_count=3,
+            channel_count= 3, # 3,
             channel_format='float32', 
-            source_id='BCI_online'
+            source_id='BCI_online',
+            # nominal_srate = 128, # add
             )
+        
         chns = self.info.desc().append_child("channels")
-
-        # streams = resolve_stream('type', 'EEG')
-        # self.inlet = StreamInlet(streams[0])
 
         for label in ["MarkerTime", "MarkerValue", "CurrentTime"]:
             ch = chns.append_child("channel")
@@ -27,36 +33,38 @@ class LSL_STREAM:
             ch.append_child_value("type", "Marker")
         self.info.desc().append_child_value("manufacturer", "PsychoPy")
 
+        # inits
         self.outlet = StreamOutlet(self.info)  # Broadcast the stream
-
-        ###
-        self.sampling_rate = 128
-        self.trial_data = []  # Buffer to store the current trial's EEG data
         self.inlet = None  # Initialize inlet as None
-        # self.lock = threading.Lock()  # To prevent data corruption in multi-threaded access
-        self.new_data_event = threading.Event()  # Event to signal new data availability
+        self.sampling_rate = 128
 
 
+    #-------------------------#
     def push_marker(self, id_trial, label):
+        """push marker outlet"""
         self.outlet.push_sample([id_trial, label, time.time()])
 
 
+    #-------------------------#
     def initialize_inlet(self, timeout=5):
-        """Initialize the LSL stream inlet with a timeout."""
-
+        """Initialize the LSL stream inlet
+        Check pylsl time_correction() and local_clock() for offset
+        """
         print("Attempting to connect to LSL stream...")
         while True:
             try:
                 # Try to resolve the EEG stream with a specified timeout
-                streams = resolve_bypred("type='EEG'", timeout=timeout)
-                if streams:
-                    # If a stream is found, initialize the inlet and break the loop
+                streams = resolve_bypred("type='EEG'", timeout=0)
+                # streams = resolve_stream('type', 'EEG')
+
+                # If a stream is found, initialize the inlet and break the loop
+                if len(streams) > 0:
                     self.inlet = StreamInlet(streams[0])
                     print(">>>[SUCCESS] LSL stream is connected!.")
                     break
 
+                # If no streams found, display a warning and wait for user action
                 else:
-                    # If no streams found, display a warning and wait for user action
                     print(f">>>[ERROR] No EEG stream detected!")
                     input("Please connect your EEG device and press [ENTER] to retry...")
 
@@ -65,136 +73,70 @@ class LSL_STREAM:
                 time.sleep(2)  # Optional: wait briefly before retrying
 
 
-    # def accumulate_samples(self):
-    
-    #     dur1 = int(self.sampling_rate * 4.0)  # Start index for 4s (e.g., at 128 Hz, it's 512 samples)
-    #     dur2 = int(self.sampling_rate * 8.0)  # End index for 8s (e.g., 1024 samples)
 
-    #     accumulated_samples = []
-    #     index = 0
-
-    #     while index <= dur2:
-        
-    #         sample, timestamp = self.inlet.pull_sample() # sample contains 37 points
-
-    #         if timestamp is not None:
-    #             if index > dur1:
-    #                 accumulated_samples.append(sample[3:35])  # Only take the EEG channels
-    #                 # print(f"[accumulated_samples] index = {index}")   
-    #             index += 1
-    
-    #     accumulated_samples = np.array(accumulated_samples).T # 32,512
-    #     return accumulated_samples
-
-
+    #-------------------------#
     def accumulate_samples(self):
+        """start accumulate prediction samples."""
     
-        dur1 = int(self.sampling_rate * 4.0)  # Start index for 4s (e.g., at 128 Hz, it's 512 samples)
-        dur2 = int(self.sampling_rate * 8.0)  # End index for 8s (e.g., 1024 samples)
-
         accumulated_samples = []
-        index = 0
-        while index < 512:
-            
-            try:
-                current_experiment_time = int(utils.SharedDataTimer.getCurrentResult().toString('ss'))
-                current_trial_time = current_experiment_time % 12 
-            except:
-                continue
+        idx = 0
+        idx_accumulated = 0
+        while True:       
+            # pull sample (37 data points) +  timestamp (internal time_clock)
+            sample, timestamp = self.inlet.pull_sample()
 
-
-            sample, timestamp = self.inlet.pull_sample() # sample contains 37 points
+            flag = utils.SharedStartAccumulate.getCurrentResult()
+            if sample is not None and flag:
+                print(f"[ACCUMULATED {idx_accumulated}/{idx}] {sample[:5]}")
+                accumulated_samples.append(sample)  # EEG channels
+                idx_accumulated += 1
             
-            if timestamp is not None:
-                if 8 >= current_trial_time >= 4:
-                    accumulated_samples.append(sample[3:35])  # EEG channels
-                    
-                    if index == 0:
-                        print(f"time: {current_trial_time} ({current_experiment_time}), START ACCUMULATE, index: {index}")
-                    elif index == 511:
-                        print(f"time: {current_trial_time} ({current_experiment_time}), END ACCUMULATE, index: {index}")
-                    index += 1
-    
-        accumulated_samples = np.array(accumulated_samples).T # 32,512
-         
+            if idx_accumulated == 512:
+                utils.SharedStartAccumulate.setCurrentResult(False)
+                break
+            
+            idx += 1
+
+        accumulated_samples = np.array(accumulated_samples).T # 37,512        
         return accumulated_samples
 
-        
 
+
+
+#=====================#
 def start_predicted_result(lsl, ml_module):
+    """ function to infer prediction to accumulated data"""
 
     print(f"\n>>>[predict_thread] --> start_predicted_result()")
 
     while True:
-
-        # # # Wait for the new data signal
-        # lsl.new_data_event.wait()   
+        # Get and process the prediction data
+        accumulated_samples = lsl.accumulate_samples()
         
-        # # Get and process the prediction data
-        prediction_data = lsl.accumulate_samples()
-
-        if prediction_data is not None :
+        if accumulated_samples is not None :
             
             # Predict on the accumulated 4s-8s data
+            prediction_data = accumulated_samples[3:35,:]
             preds = ml_module.predict(prediction_data).item()
             utils.SharedDataLabel.setCurrentResult(preds)
 
             # Logs
             print("DATA: ", prediction_data)
             print("PREDICTION RESULT: ", preds)
-
-        # # Clear the event to wait for the next new data signal
-        # lsl.new_data_event.clear()
-        time.sleep(0.1)  # Optional sleep to reduce CPU usage
-
+        
+        # Optional sleep to reduce CPU usage
+        time.sleep(0.1)  
 
 
 
-
-
-# # #--------------------#
-# def start_record_offline(**kwargs):
-
-#     ##
-#     num_samples = 512
-#     trial_idx = 0
-#     while trial_idx < kwargs["n_trials"]:
-#         data = epochs[trial_idx].crop(4,8).get_data() # (1,chan,513)
-#         array_sample = data[0,:,:num_samples] # (chan,512)
-
-#         wait(12)
-#         trial_idx += 1
-#     return array_sample
-
-
+#=====================#
 class OFFLINE_STREAM:
+    """
+    debug offline stream
+    """
     def __init__(self):
-        # data = start_record_offline()
-        # self.epochs = get_epochs(subject=20, run=1)  
-        # self.data = self.epochs[index-1].crop(4, 8).get_data() # (1,3,513)
-
         self.data = np.random.random_sample((32, 512))
 
     def accumulate_samples(self, index:int=1):
-        # return np.array(self.data[0, :, :512])
         return self.data
 
-
-
-
-
-
-# # s = Offline_Stream()
-# # print(s.accumulate_samples().shape)
-    
-
-# #--------------------#
-# def start_predicted_result(lsl, ml_module, index=1):
-
-#     # Accumulate samples for 4 seconds
-#     accumulated_samples = lsl.accumulate_samples(index)
-#     print("okkkkkkkkk", accumulated_samples[0, :5])
-
-#     # Process the accumulated samples and predict
-#     return SharedData.setCurrentResult(
-#         ml_module.predict(accumulated_samples).item())

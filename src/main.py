@@ -1,13 +1,23 @@
 """
-Pilot work by Cuong Pham
-cuongquocpham151@gmail.com
+cd /d D:\[RA]-HCMIU_BHL\CODE\online-bci
+conda activate onlinebci
+
+# setup
+pip install -r requirements.txt
+conda install -c conda-forge liblsl
+
+# run
+python src/main.py
+
+##################
+Contact: Cuong Pham
+Email: cuongquocpham151@gmail.com
+
 """
 
 import sys
-import numpy as np
 import time
 import threading
-from queue import Queue
 
 from PyQt6 import QtWidgets
 from PyQt6.QtWidgets import QApplication
@@ -21,6 +31,8 @@ from cortex.export import start_recording_experiment
 from classifier.lsl_stream import start_predicted_result, LSL_STREAM, OFFLINE_STREAM
 from classifier.infer import Module_Prediction
 import utils
+
+
 
 
 #--------------------------------#
@@ -108,11 +120,9 @@ class CONFIG_MODEL(config_model):
         widget.setCurrentWidget(e)
 
 
-
 #--------------------------------#
 class EXPERIMENT(experiment):
-
-    # bat dau su dung
+    
     def start_experiment(self):
 
         if STREAM_ONLINE:
@@ -136,7 +146,7 @@ class EXPERIMENT(experiment):
                     break
     
         
-        # CUONG
+        # Newly added
         for key in self.kwargs.keys(): 
             self.label_info[key].hide()
 
@@ -154,6 +164,7 @@ class EXPERIMENT(experiment):
         widget.setCurrentWidget(s)
 
     def end_experiment(self):
+        print("\n\n>>>>>>> END EXPERIMENT <<<<<<<<<<<")
         # stop all timer at the end
         self.timer.stop()
         self.timer_blur_instruction.stop()

@@ -20,13 +20,14 @@ class config_trial(QMainWindow):
         self.create_option()
         self.setCentralWidget(self.centralwidget)
 
-
+    #------------------------------#
     def create_label(self):
         self.title = QtWidgets.QLabel(self.centralwidget)
         self.title.setText("Input the numbers of trials")
         self.title.setProperty("class", "menu-title")
         self.title.show()
 
+    #------------------------------#
     def create_option(self):
         box_x = int((self.width() - SELECT_BOX_WIDTH) / 2)
         box_y = int((self.height() - SELECT_BOX_HEIGHT) / 2)
@@ -67,6 +68,7 @@ class config_trial(QMainWindow):
                 )
         )
 
+    #------------------------------#
     def resizeEvent(self, event):
         self.title.move(
             int((self.width() - self.title.width()) / 2), 
@@ -79,6 +81,7 @@ class config_trial(QMainWindow):
         QtWidgets.QMainWindow.resizeEvent(self, event)
 
 
+    #------------------------------#
     def navigate_to_config_class(self, **kwargs):
         pass
 
@@ -94,7 +97,6 @@ class config_class(QMainWindow):
         self.setProperty("class", "screen-background")
         self.centralwidget = QtWidgets.QWidget(self)
 
-
         ## label
         self.create_label()
 
@@ -108,7 +110,7 @@ class config_class(QMainWindow):
         self.setCentralWidget(self.centralwidget)
 
 
-
+    #------------------------------#
     def create_label(self):
         self.title = QtWidgets.QLabel(self.centralwidget)
         self.title.setText("Select Class-Mode")
@@ -116,6 +118,7 @@ class config_class(QMainWindow):
         self.title.show()
 
 
+    #------------------------------#
     def create_option(self, qrect_text:str, qrect_x:int, qrect_y:int):
         self.option = QtWidgets.QPushButton(self.centralwidget)
         self.option.setGeometry(
@@ -134,7 +137,7 @@ class config_class(QMainWindow):
                 )
         )
 
-
+    #------------------------------#
     def resizeEvent(self, event):
         self.title.move(
             int((self.width() - self.title.width()) / 2), 
@@ -142,6 +145,8 @@ class config_class(QMainWindow):
             )
         QtWidgets.QMainWindow.resizeEvent(self, event)
 
+
+    #------------------------------#
     def navigate_to_config_model(self, **kwargs):
         pass
 
@@ -163,7 +168,7 @@ class config_model(QMainWindow):
         self.create_button()
         self.setCentralWidget(self.centralwidget)
     
-
+    #------------------------------#
     def create_label(self):
         self.title = QtWidgets.QLabel(self.centralwidget)
         self.title.setText("Import Model")
@@ -171,6 +176,7 @@ class config_model(QMainWindow):
         self.title.show()
 
 
+    #------------------------------#
     def create_button(self):
   
         self.btn = QtWidgets.QPushButton(self.centralwidget)
@@ -186,6 +192,7 @@ class config_model(QMainWindow):
         self.btn.clicked.connect(self.openFileNameDialog)
 
 
+    #------------------------------#
     def openFileNameDialog(self):
 
         options = QFileDialog.Option.DontUseNativeDialog
@@ -201,6 +208,7 @@ class config_model(QMainWindow):
             )
 
 
+    #------------------------------#
     def resizeEvent(self, event):
         self.title.move(
             int((self.width() - self.title.width()) / 2), 
@@ -213,6 +221,6 @@ class config_model(QMainWindow):
         QtWidgets.QMainWindow.resizeEvent(self, event)
 
 
-
+    #------------------------------#
     def navigate_to_experiment(self, **kwargs):
         pass

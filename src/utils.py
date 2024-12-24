@@ -1,7 +1,5 @@
-import os
 from datetime import datetime
 import json
-from pylsl import resolve_stream
 from wrapt_timeout_decorator import *
 from PyQt6 import QtGui
 from PyQt6.QtWidgets import QMessageBox
@@ -10,7 +8,7 @@ from PyQt6.QtWidgets import QMessageBox
 
 #----------------------------#
 class SharedDataLabel:
-    """ share data """
+    """ Share data labels """
     
     current_result = None
     @staticmethod
@@ -29,7 +27,7 @@ class SharedDataLabel:
 
 #----------------------------#
 class SharedDataTimer:
-    """ share data """
+    """ share data timer """
     
     current_result = None
     @staticmethod
@@ -45,42 +43,46 @@ class SharedDataTimer:
         return current
 
 
+
+#----------------------------#
+class SharedStartAccumulate:
+    """ share data accumulate"""
+
+    current_result = None
+    @staticmethod
+    def setCurrentResult(result):
+        SharedStartAccumulate.current_result = result
+        print(f"\n>>> [SharedStartAccumulate] setCurrentResult() ==> {result}")
+        return result
+
+    @staticmethod
+    def getCurrentResult():
+        current = SharedStartAccumulate.current_result
+        # print(f"\n>>> [SharedDataTimer] getCurrentResult(): {current}")
+        return current
+
+
+
 #----------------------------#
 def export_json(recorded_trials: list, custom_dir:str=None):
     """export json file"""
 
     # path
     current_datetime = datetime.now()
-    home_dir = os.path.expanduser("~").replace('\\', '/')
-    
-    # check whether the directory exists, if not then create it
-    def make_dir():
-        if not os.path.exists(f'{home_dir}/bci'):
-            os.makedirs(f'{home_dir}/bci')
+    dir_to_export = (f'./records') if custom_dir == None else custom_dir
 
-    def get_dir():
-        return home_dir
-    
-    # run 
-    make_dir()
-
-    dir_to_export = (f'{home_dir}/bci') if custom_dir == None else custom_dir
-
-    current_datetime_formatted = current_datetime.strftime("%d_%m_%Y-%H_%M_%S")
+    current_datetime_formatted = current_datetime.strftime("%H.%M.%S_%d-%m-%y")
     json_object = json.dumps(recorded_trials, indent=4)
 
+    path_json_save = f'{dir_to_export}/{current_datetime_formatted}_LOG.json'
+
     try:
-        with open(f'{dir_to_export}/{current_datetime_formatted}.json', 'w+') as outfile:
+        with open(path_json_save, 'w+') as outfile:
             outfile.write(json_object)
+        print("Saved: ", path_json_save)
+
     except Exception as e:
         raise Exception('Error exporting json file').with_traceback(e.__traceback__)
-
-
-#----------------------------#
-# # Check timeout for streaming status
-# @timeout(3, use_signals=False)
-# def _resolve_stream():
-#     resolve_stream('type', 'EEG')
 
 
 #----------------------------#
@@ -96,9 +98,11 @@ def func_set_geometry(s):
 
 #--------------------------------#
 def func_show_popup():
+    """show warning popup"""
+
     msg = QMessageBox()
     msg.setWindowTitle("Warning")
-    msg.setText("[Stream Failed]--> Need to click <start> in EmotivPro LabStreamingLayer")
+    msg.setText("[Stream Failed]--> Click <start> in LabStreamingLayer")
     button = msg.exec()
     if button == QMessageBox.StandardButton.Ok:
         pass

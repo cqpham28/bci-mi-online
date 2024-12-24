@@ -11,10 +11,6 @@ class Record():
         self.c.bind(export_record_done=self.on_export_record_done)
         self.c.bind(inform_error=self.on_inform_error)
 
-        # Cuong add
-        # self.c.bind(inject_marker_done=self.on_inject_marker_done)
-        # self.c.bind(update_marker_done=self.on_update_marker_done)
-
     def start(self, record_duration_s=20, headsetId=''):
         """
         To start data recording and exporting process as below
@@ -84,7 +80,7 @@ class Record():
         self.c.export_record(folder, stream_types, format, record_ids, version, **kwargs)
 
 
-    ## CUONG add
+    #newly added
     def inject_marker_request(self, time, value, label, **kwargs):
         """ inject """
         self.c.inject_marker_request(time, value, label, **kwargs)
@@ -155,7 +151,9 @@ class Record():
 
         #export record
         self.export_record(self.record_export_folder, self.record_export_data_types,
-                           self.record_export_format, [self.record_id], self.record_export_version)
+                           self.record_export_format, [self.record_id], self.record_export_version,
+                        #    includeMarkerExtraInfos=True
+        )
 
     def on_export_record_done(self, *args, **kwargs):
         print('on_export_record_done: the successful record exporting as below:')
@@ -168,10 +166,6 @@ class Record():
         print(error_data)
 
     
-    # ## CUONG add
-    # def on_inject_marker_done(self, *args, **kwargs):
-    #     data = kwargs.get('data')
-    #     print("INJECT: ", data)
 
 
 # -----------------------------------------------------------
