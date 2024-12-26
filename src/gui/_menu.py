@@ -43,7 +43,7 @@ class menu(QMainWindow):
         self.btn_ex.setIconSize(QtCore.QSize(32, 32))
         self.btn_ex.setLayoutDirection(QtCore.Qt.LayoutDirection(1))
         self.btn_ex.clicked.connect(
-            self.navigate_to_config_trial()
+            lambda: self.navigate_to_config_trial()
         )
 
         self.btn_quit = QtWidgets.QPushButton(self.centralwidget)
